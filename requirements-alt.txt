@@ -7,6 +7,6 @@ tensorwatch
 tensorboardX
 pandas
 ptflops
-timm
+timm==0.5.4
 numpy
 einops
