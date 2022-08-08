@@ -44,7 +44,7 @@ def parse_args():
                         type=str)
 
     # distributed training
-    parser.add_argument("--local_rank", type=int, default=0)
+    parser.add_argument("--local_rank", type=int, default=-1)
     parser.add_argument("--port", type=int, default=9000)
 
     parser.add_argument('opts',
@@ -188,6 +188,9 @@ def main():
             save_model_on_master(
                 model, args.distributed, final_output_dir, f'model_{epoch}.pth'
             )
+
+        if args.local_rank != -1:
+            torch.distributed.barrier()
 
         logging.info(
             '=> {} epoch end, duration : {:.2f}s'
