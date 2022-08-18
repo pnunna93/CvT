@@ -79,7 +79,7 @@ def build_dataloader(cfg, is_train=True, distributed=False):
             input_size=cfg.TRAIN.IMAGE_SIZE[0],
             batch_size=cfg.TRAIN.BATCH_SIZE_PER_GPU,
             is_training=True,
-            use_prefetcher=True,
+            use_prefetcher=timm_cfg.PREFETCH,
             no_aug=False,
             re_prob=timm_cfg.RE_PROB,
             re_mode=timm_cfg.RE_MODE,
