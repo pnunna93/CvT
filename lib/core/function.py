@@ -32,6 +32,7 @@ def train_one_epoch(config, train_loader, model, criterion, optimizer, epoch,
         mode=aug.MIXUP_MODE, label_smoothing=config.LOSS.LABEL_SMOOTHING,
         num_classes=config.MODEL.NUM_CLASSES
     ) if aug.MIXUP_PROB > 0.0 else None
+    torch.cuda.synchronize()
     end = time.time()
     for i, (x, y) in enumerate(train_loader):
         # measure data loading time
@@ -81,6 +82,7 @@ def train_one_epoch(config, train_loader, model, criterion, optimizer, epoch,
         top5.update(prec5, x.size(0))
 
         # measure elapsed time
+        torch.cuda.synchronize()
         batch_time.update(time.time() - end)
         end = time.time()
 
@@ -97,8 +99,6 @@ def train_one_epoch(config, train_loader, model, criterion, optimizer, epoch,
                       speed=x.size(0)/batch_time.val,
                       data_time=data_time, loss=losses, top1=top1, top5=top5)
             logging.info(msg)
-
-        torch.cuda.synchronize()
 
     if writer_dict and comm.is_main_process():
         writer = writer_dict['writer']
