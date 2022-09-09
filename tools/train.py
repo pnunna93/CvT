@@ -189,7 +189,7 @@ def main():
                 model, args.distributed, final_output_dir, f'model_{epoch}.pth'
             )
 
-        if args.local_rank != -1:
+        if args.distributed:
             torch.distributed.barrier()
 
         logging.info(
