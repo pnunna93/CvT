@@ -33,6 +33,8 @@ from utils.utils import resume_checkpoint
 from utils.utils import save_checkpoint_on_master
 from utils.utils import save_model_on_master
 
+import transformers
+from transformers.debug_utils import DebugUnderflowOverflow
 
 def parse_args():
     parser = argparse.ArgumentParser(
@@ -80,6 +82,8 @@ def main():
 
     model = build_model(config)
     model.to(torch.device('cuda'))
+   
+    debug_overflow = DebugUnderflowOverflow(model)
 
     # copy model file
     summary_model_on_master(model, config, final_output_dir, True)
@@ -102,10 +106,10 @@ def main():
     best_perf, begin_epoch = resume_checkpoint(
         model, optimizer, config, final_output_dir, True
     )
-
+     
     train_loader = build_dataloader(config, True, args.distributed)
     valid_loader = build_dataloader(config, False, args.distributed)
-
+     
     if args.distributed:
         model = torch.nn.parallel.DistributedDataParallel(
             model, device_ids=[args.local_rank],
