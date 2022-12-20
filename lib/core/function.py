@@ -5,6 +5,7 @@ from __future__ import print_function
 import logging
 import time
 import torch
+import os
 
 from timm.data import Mixup
 from torch.cuda.amp import autocast
@@ -12,6 +13,12 @@ from torch.cuda.amp import autocast
 from core.evaluate import accuracy
 from utils.comm import comm
 
+dir_path = os.path.dirname(os.path.realpath(__file__))
+iot_path = os.path.join(dir_path,"..","models")
+
+import sys
+sys.path.insert(0,iot_path)
+from io_tensors import *
 
 def train_one_epoch(config, train_loader, model, criterion, optimizer, epoch,
                     output_dir, tb_log_dir, writer_dict, scaler=None):
@@ -41,10 +48,10 @@ def train_one_epoch(config, train_loader, model, criterion, optimizer, epoch,
         # compute output
         x = x.cuda(non_blocking=True)
         y = y.cuda(non_blocking=True)
-
+        
         if mixup_fn:
             x, y = mixup_fn(x, y)
-
+        
         with autocast(enabled=config.AMP.ENABLED):
             if config.AMP.ENABLED and config.AMP.MEMORY_FORMAT == 'nwhc':
                 x = x.contiguous(memory_format=torch.channels_last)
@@ -52,7 +59,7 @@ def train_one_epoch(config, train_loader, model, criterion, optimizer, epoch,
 
             outputs = model(x)
             loss = criterion(outputs, y)
-
+        
         # compute gradient and do update step
         optimizer.zero_grad()
         is_second_order = hasattr(optimizer, 'is_second_order') \
@@ -71,6 +78,13 @@ def train_one_epoch(config, train_loader, model, criterion, optimizer, epoch,
 
         scaler.step(optimizer)
         scaler.update()
+        if comm.is_main_process() and epoch%10==0:
+            logging.info('=> saving IO data to {}'.format(output_dir))
+            global save_dict
+            save_dict['x'] = x
+            save_dict['y'] = y
+            torch.save(save_dict,os.path.join(output_dir,f'IO_epoch{epoch}_i{i}.pt'))
+        
         # measure accuracy and record loss
         losses.update(loss.item(), x.size(0))
 

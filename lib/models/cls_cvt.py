@@ -20,6 +20,7 @@ from timm.models.layers import DropPath, trunc_normal_
 
 from .registry import register_model
 
+from io_tensors import *
 
 # From PyTorch internals
 def _ntuple(n):
@@ -122,7 +123,7 @@ class Attention(nn.Module):
         self.attn_drop = nn.Dropout(attn_drop)
         self.proj = nn.Linear(dim_out, dim_out)
         self.proj_drop = nn.Dropout(proj_drop)
-
+ 
     def _build_projection(self,
                           dim_in,
                           dim_out,
@@ -605,12 +606,18 @@ class ConvolutionalVisionTransformer(nn.Module):
         return layers
 
     def forward_features(self, x):
+        global save_dict
+        save_dict[f'stage0_xin'] = x
         for i in range(self.num_stages):
             x, cls_tokens = getattr(self, f'stage{i}')(x)
+            save_dict[f'stage{i}_xout'] = x
 
         if self.cls_token:
+            save_dict[f'cls_tokens'] = cls_tokens
             x = self.norm(cls_tokens)
+            save_dict[f'post_norm'] = x
             x = torch.squeeze(x)
+            save_dict[f'post_squeeze'] = x
         else:
             x = rearrange(x, 'b c h w -> b (h w) c')
             x = self.norm(x)
@@ -619,9 +626,11 @@ class ConvolutionalVisionTransformer(nn.Module):
         return x
 
     def forward(self, x):
+        global save_dict
         x = self.forward_features(x)
         x = self.head(x)
-
+         
+        save_dict[f'post_head'] = x
         return x
 
 
