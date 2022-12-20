@@ -52,7 +52,7 @@ def _build_imagenet_dataset(cfg, is_train):
 def build_dataloader(cfg, is_train=True, distributed=False):
     if is_train:
         batch_size_per_gpu = cfg.TRAIN.BATCH_SIZE_PER_GPU
-        shuffle = True
+        shuffle = False 
     else:
         batch_size_per_gpu = cfg.TEST.BATCH_SIZE_PER_GPU
         shuffle = False

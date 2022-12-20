@@ -78,6 +78,6 @@ TRAIN:
   OPTIMIZER: adamW
   WD: 0.05
   WITHOUT_WD_LIST: ['bn', 'bias', 'ln']
-  SHUFFLE: true
+  SHUFFLE: false 
 DEBUG:
   DEBUG: false
