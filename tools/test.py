@@ -41,7 +41,6 @@ def parse_args():
                         type=str)
 
     # distributed training
-    #parser.add_argument("--local_rank", type=int, default=0)
     parser.add_argument("--port", type=int, default=9000)
 
     parser.add_argument('opts',

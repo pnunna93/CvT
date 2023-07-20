@@ -1,7 +1,6 @@
 #!/bin/bash
 
 train() {
-    #python3 -m torch.distributed.launch \
     torchrun --nnodes ${NODE_COUNT} \
         --node_rank ${RANK} \
         --master_addr ${MASTER_ADDR} \
@@ -12,7 +11,6 @@ train() {
 
 
 test() {
-    #python3 -m torch.distributed.launch \
     torchrun --nnodes ${NODE_COUNT} \
         --node_rank ${RANK} \
         --master_addr ${MASTER_ADDR} \
